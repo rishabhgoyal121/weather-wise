@@ -48,8 +48,8 @@ const WeatherDisplay = ({
 };
 
 WeatherDisplay.propTypes = {
-  city: PropTypes.string.isRequired,
   weatherApiKey: PropTypes.string.isRequired,
+  city: PropTypes.string.isRequired,
 };
 
 export default WeatherDisplay;
