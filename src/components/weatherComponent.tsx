@@ -30,7 +30,7 @@ const WeatherDisplay = ({
       setIcon(`http://openweathermap.org/img/w/${data.weather[0].icon}.png`);
     };
     fetchWeather();
-  }, [city]);
+  }, [city, weatherApiKey]);
 
   return (
     <div className="">
