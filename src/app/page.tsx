@@ -69,7 +69,6 @@ function App() {
       </form>
       <MapDisplay
         weatherApiKey={weatherApiKey || ""}
-        geocodingApiKey={geocodingApiKey || ""}
         initialLatitude={latitude}
         setLatitude={setLatitude}
         initialLongitude={longitude}

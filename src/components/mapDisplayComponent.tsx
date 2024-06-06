@@ -1,32 +1,33 @@
+"use client";
+import dynamic from "next/dynamic";
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false } // This will load the component only on client side
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+  ssr: false,
+});
+
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  useMapEvents,
-  Popup,
-} from "react-leaflet";
-import L from "leaflet";
+import { useMapEvents } from "react-leaflet";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import WeatherDisplay from "@/components/weatherComponent";
-
-// Custom icon for the marker
-const customIcon = new L.Icon({
-  iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  shadowSize: [41, 41],
-});
+import { DivIcon, Icon, IconOptions } from "leaflet";
 
 const MapDisplay = ({
   weatherApiKey,
-  geocodingApiKey,
   initialLatitude = 51.505, // default latitude
   setLatitude,
   initialLongitude = -0.09, // default longitude
@@ -35,7 +36,6 @@ const MapDisplay = ({
   city = "London",
 }: {
   weatherApiKey: string;
-  geocodingApiKey: string;
   initialLatitude?: number;
   setLatitude: (latitude: number) => void;
   initialLongitude?: number;
@@ -44,6 +44,22 @@ const MapDisplay = ({
   city?: string;
 }) => {
   const [error, setError] = useState<null | unknown>(null);
+  const [customIcon, setCustomIcon] = useState<Icon<IconOptions> | DivIcon | undefined>(undefined);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const L = require("leaflet");
+      setCustomIcon(
+        new L.Icon({
+          iconUrl: "/marker-icon.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        })
+      );
+    }
+  }, []);
 
   const fetchWeather = async (lat: number, lon: number) => {
     try {
@@ -102,7 +118,6 @@ const MapDisplay = ({
 
 MapDisplay.propTypes = {
   weatherApiKey: PropTypes.string.isRequired,
-  geocodingApiKey: PropTypes.string.isRequired,
   initialLatitude: PropTypes.number,
   setLatitude: PropTypes.func.isRequired,
   initialLongitude: PropTypes.number,
