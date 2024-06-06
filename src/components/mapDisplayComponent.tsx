@@ -45,6 +45,7 @@ const MapDisplay = ({
 }) => {
   const [error, setError] = useState<null | unknown>(null);
   const [customIcon, setCustomIcon] = useState<Icon<IconOptions> | DivIcon | undefined>(undefined);
+  const [map, setMap] = useState<any>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -86,6 +87,12 @@ const MapDisplay = ({
       },
     });
 
+    useEffect(() => {
+  if (map && initialLatitude !== undefined && initialLongitude !== undefined) {
+    map.flyTo([initialLatitude, initialLongitude], map.getZoom());
+  }
+}, [map, initialLatitude, initialLongitude]);
+
     return initialLatitude !== undefined && initialLongitude !== undefined ? (
       <Marker
         position={[initialLatitude, initialLongitude]}
@@ -105,7 +112,8 @@ const MapDisplay = ({
     <MapContainer
       center={[initialLatitude, initialLongitude]}
       zoom={zoomLevel}
-      style={{ height: "100vh", width: "100%" }}
+      className="h-[100vh] w-full"
+      whenReady={() => setMap(() => {})} // Replace 'whenCreated' with 'whenReady' and pass an empty function as an argument
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
