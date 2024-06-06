@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import MapDisplay from "@/app/components/mapDisplayComponent";
+import MapDisplay from "@/components/mapDisplayComponent";
 import axios from "axios";
 
 function App() {
@@ -9,11 +9,6 @@ function App() {
   const [city, setCity] = useState<string>("London");
   const [latitude, setLatitude] = useState<number>(51.505);
   const [longitude, setLongitude] = useState<number>(-0.09);
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // Pass the latitude and longitude to the MapDisplay component
-  };
 
   useEffect(() => {
     const fetchCity = async () => {
@@ -33,7 +28,7 @@ function App() {
 
   return (
     <div className="App">
-      <form onSubmit={handleSubmit}>
+      <form>
         <label>
           Latitude:
           <input
@@ -71,15 +66,15 @@ function App() {
             required
           />
         </label>
-        <input type="submit" value="Submit" />
       </form>
       <MapDisplay
-        apiKey={weatherApiKey || ""}
+        weatherApiKey={weatherApiKey || ""}
+        geocodingApiKey={geocodingApiKey || ""}
         initialLatitude={latitude}
         setLatitude={setLatitude}
         initialLongitude={longitude}
         setLongitude={setLongitude}
-        zoomLevel={13}
+        zoomLevel={7}
         city={city}
       />
     </div>

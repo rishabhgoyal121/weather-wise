@@ -2,7 +2,13 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-const WeatherDisplay = ({ city }: { city: string }) => {
+const WeatherDisplay = ({
+  weatherApiKey,
+  city,
+}: {
+  weatherApiKey: string;
+  city: string;
+}) => {
   const [temperature, setTemperature] = useState<string | null>(null);
   const [condition, setCondition] = useState<string | null>(null);
   const [humidity, setHumidity] = useState<string | null>(null);
@@ -13,7 +19,7 @@ const WeatherDisplay = ({ city }: { city: string }) => {
   useEffect(() => {
     const fetchWeather = async () => {
       const response = await fetch(
-        `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}`
+        `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherApiKey}`
       );
       const data = await response.json();
       setTemperature(data.main.temp);
@@ -29,7 +35,7 @@ const WeatherDisplay = ({ city }: { city: string }) => {
   return (
     <div className="">
       <div className="flex ">
-        <h2>Weather in {city}{" "}</h2>
+        <h2>Weather in {city} </h2>
         <img src={icon || "default_image.png"} alt="Weather icon" />
       </div>
       <p>Temperature: {temperature}</p>
@@ -43,6 +49,7 @@ const WeatherDisplay = ({ city }: { city: string }) => {
 
 WeatherDisplay.propTypes = {
   city: PropTypes.string.isRequired,
+  weatherApiKey: PropTypes.string.isRequired,
 };
 
 export default WeatherDisplay;

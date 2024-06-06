@@ -10,7 +10,7 @@ import {
 import L from "leaflet";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
-import WeatherDisplay from "@/app/components/weatherComponent";
+import WeatherDisplay from "@/components/weatherComponent";
 
 // Custom icon for the marker
 const customIcon = new L.Icon({
@@ -25,7 +25,8 @@ const customIcon = new L.Icon({
 });
 
 const MapDisplay = ({
-  apiKey,
+  weatherApiKey,
+  geocodingApiKey,
   initialLatitude = 51.505, // default latitude
   setLatitude,
   initialLongitude = -0.09, // default longitude
@@ -33,7 +34,8 @@ const MapDisplay = ({
   zoomLevel = 13,
   city = "London",
 }: {
-  apiKey: string;
+  weatherApiKey: string;
+  geocodingApiKey: string;
   initialLatitude?: number;
   setLatitude: (latitude: number) => void;
   initialLongitude?: number;
@@ -46,7 +48,7 @@ const MapDisplay = ({
   const fetchWeather = async (lat: number, lon: number) => {
     try {
       await axios.get(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&units=metric`
       );
     } catch (err) {
       setError(err);
@@ -75,7 +77,7 @@ const MapDisplay = ({
         eventHandlers={{ add: (e) => e.target.openPopup() }}
       >
         <Popup>
-          <WeatherDisplay city={city} />
+          <WeatherDisplay weatherApiKey={weatherApiKey} city={city} />
         </Popup>
       </Marker>
     ) : null;
@@ -99,10 +101,14 @@ const MapDisplay = ({
 };
 
 MapDisplay.propTypes = {
-  apiKey: PropTypes.string.isRequired,
+  weatherApiKey: PropTypes.string.isRequired,
+  geocodingApiKey: PropTypes.string.isRequired,
   initialLatitude: PropTypes.number,
+  setLatitude: PropTypes.func.isRequired,
   initialLongitude: PropTypes.number,
+  setLongitude: PropTypes.func.isRequired,
   zoomLevel: PropTypes.number,
+  city: PropTypes.string,
 };
 
 export default MapDisplay;
