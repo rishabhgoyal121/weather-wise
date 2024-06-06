@@ -19,7 +19,7 @@ const WeatherDisplay = ({
   useEffect(() => {
     const fetchWeather = async () => {
       const response = await fetch(
-        `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherApiKey}`
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${weatherApiKey}`
       );
       const data = await response.json();
       setTemperature(data.main.temp);
@@ -27,7 +27,7 @@ const WeatherDisplay = ({
       setHumidity(data.main.humidity);
       setWindSpeed(data.wind.speed);
       setChanceOfRain(data.rain ? data.rain["1h"] : 0);
-      setIcon(`http://openweathermap.org/img/w/${data.weather[0].icon}.png`);
+      setIcon(`https://openweathermap.org/img/w/${data.weather[0].icon}.png`);
     };
     fetchWeather();
   }, [city, weatherApiKey]);
