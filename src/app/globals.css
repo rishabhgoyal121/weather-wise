@@ -31,3 +31,7 @@ body {
     text-wrap: balance;
   }
 }
+.leaflet-popup-content-wrapper {
+  width: auto !important; /* Set the width as needed */
+  height: 23vw !important; /* Set the height as needed */
+}
