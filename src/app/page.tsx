@@ -22,6 +22,13 @@ function useDebounce<T>(value: T, delay: number) {
 function App() {
   const weatherApiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
   const geocodingApiKey = process.env.NEXT_PUBLIC_GEOCODING_API_KEY;
+
+  // Add logging to verify API keys
+  useEffect(() => {
+    console.log("Weather API Key:", weatherApiKey ? "Present" : "Missing");
+    console.log("Geocoding API Key:", geocodingApiKey ? "Present" : "Missing");
+  }, [weatherApiKey, geocodingApiKey]);
+
   const [city, setCity] = useState<string>("London");
   const [latitude, setLatitude] = useState<number>(51.505);
   const [longitude, setLongitude] = useState<number>(-0.09);
@@ -107,12 +114,14 @@ function App() {
       </form>
       <MapDisplay
         weatherApiKey={weatherApiKey || ""}
+        geocodingApiKey={geocodingApiKey || ""}
         initialLatitude={latitude}
         setLatitude={setLatitude}
         initialLongitude={longitude}
         setLongitude={setLongitude}
         zoomLevel={7}
         city={city}
+        setCity={setCity}
       />
     </div>
   );

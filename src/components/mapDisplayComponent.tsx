@@ -20,7 +20,7 @@ const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
 
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { useMapEvents } from "react-leaflet";
+import { useMapEvents, useMap } from "react-leaflet";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import WeatherDisplay from "@/components/weatherComponent";
@@ -28,24 +28,30 @@ import { DivIcon, Icon, IconOptions } from "leaflet";
 
 const MapDisplay = ({
   weatherApiKey,
+  geocodingApiKey,
   initialLatitude = 51.505, // default latitude
   setLatitude,
   initialLongitude = -0.09, // default longitude
   setLongitude,
   zoomLevel = 13,
   city = "London",
+  setCity,
 }: {
   weatherApiKey: string;
+  geocodingApiKey: string;
   initialLatitude?: number;
   setLatitude: (latitude: number) => void;
   initialLongitude?: number;
   setLongitude: (longitude: number) => void;
   zoomLevel?: number;
   city?: string;
+  setCity?: (city: string) => void;
 }) => {
   const [error, setError] = useState<null | unknown>(null);
   const [customIcon, setCustomIcon] = useState<Icon<IconOptions> | DivIcon | undefined>(undefined);
-  const [map, setMap] = useState<any>(null);
+  const [currentLat, setCurrentLat] = useState(initialLatitude);
+  const [currentLng, setCurrentLng] = useState(initialLongitude);
+  const [currentCity, setCurrentCity] = useState(city);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -64,56 +70,106 @@ const MapDisplay = ({
 
   const fetchWeather = async (lat: number, lon: number) => {
     try {
-      await axios.get(
+      if (!weatherApiKey) {
+        setError(new Error("Weather API key is missing. Please check your environment variables."));
+        return;
+      }
+
+      const response = await axios.get(
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&units=metric`
       );
+      
+      if (response.status === 429) {
+        setError(new Error("API call limit reached. Please try again in 10 minutes."));
+        return;
+      }
     } catch (err) {
-      setError(err);
+      if (axios.isAxiosError(err) && err.response?.status === 429) {
+        setError(new Error("API call limit reached. Please try again in 10 minutes."));
+      } else {
+        setError(err instanceof Error ? err : new Error("Failed to fetch weather data"));
+      }
+    }
+  };
+
+  const fetchCityName = async (lat: number, lng: number) => {
+    try {
+      if (!geocodingApiKey) {
+        setCurrentCity("Unknown Location");
+        if (setCity) {
+          setCity("Unknown Location");
+        }
+        return;
+      }
+
+      const response = await axios.get(
+        `https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=${geocodingApiKey}`
+      );
+      const cityName = response.data.results[0].components.city || 
+                      response.data.results[0].components.town ||
+                      response.data.results[0].components.village ||
+                      "Unknown Location";
+      setCurrentCity(cityName);
+      if (setCity) {
+        setCity(cityName);
+      }
+    } catch (err) {
+      console.error("Failed to fetch city name:", err);
+      setCurrentCity("Unknown Location");
+      if (setCity) {
+        setCity("Unknown Location");
+      }
     }
   };
 
   useEffect(() => {
-    fetchWeather(initialLatitude, initialLongitude);
-  }, [initialLatitude, initialLongitude]);
+    fetchWeather(currentLat, currentLng);
+    fetchCityName(currentLat, currentLng);
+  }, [currentLat, currentLng]);
 
   const LocationMarker = () => {
-    const map = useMapEvents({
+    const map = useMap();
+    
+    useEffect(() => {
+      map.flyTo([currentLat, currentLng], map.getZoom());
+    }, [currentLat, currentLng, map]);
+
+    useMapEvents({
       click(e) {
         const { lat, lng } = e.latlng;
-        fetchWeather(lat, lng);
+        setCurrentLat(lat);
+        setCurrentLng(lng);
         setLatitude(lat);
         setLongitude(lng);
         map.flyTo(e.latlng, map.getZoom());
       },
     });
 
-    useEffect(() => {
-  if (map && initialLatitude !== undefined && initialLongitude !== undefined) {
-    map.flyTo([initialLatitude, initialLongitude], map.getZoom());
-  }
-}, [map, initialLatitude, initialLongitude]);
-
-    return initialLatitude !== undefined && initialLongitude !== undefined ? (
+    return (
       <Marker
-        position={[initialLatitude, initialLongitude]}
+        position={[currentLat, currentLng]}
         icon={customIcon}
         eventHandlers={{ add: (e) => e.target.openPopup() }}
       >
         <Popup>
-          <WeatherDisplay weatherApiKey={weatherApiKey} city={city} />
+          <WeatherDisplay 
+            weatherApiKey={weatherApiKey} 
+            city={currentCity} 
+            latitude={currentLat}
+            longitude={currentLng}
+          />
         </Popup>
       </Marker>
-    ) : null;
+    );
   };
 
   if (error) return <div>Error: {(error as Error).message}</div>;
 
-  return initialLatitude !== undefined && initialLongitude !== undefined ? (
+  return (
     <MapContainer
-      center={[initialLatitude, initialLongitude]}
+      center={[currentLat, currentLng]}
       zoom={zoomLevel}
       className="h-[100vh] w-full"
-      whenReady={() => setMap(() => {})} // Replace 'whenCreated' with 'whenReady' and pass an empty function as an argument
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -121,17 +177,19 @@ const MapDisplay = ({
       />
       <LocationMarker />
     </MapContainer>
-  ) : null;
+  );
 };
 
 MapDisplay.propTypes = {
   weatherApiKey: PropTypes.string.isRequired,
+  geocodingApiKey: PropTypes.string.isRequired,
   initialLatitude: PropTypes.number,
   setLatitude: PropTypes.func.isRequired,
   initialLongitude: PropTypes.number,
   setLongitude: PropTypes.func.isRequired,
   zoomLevel: PropTypes.number,
   city: PropTypes.string,
+  setCity: PropTypes.func,
 };
 
 export default MapDisplay;
