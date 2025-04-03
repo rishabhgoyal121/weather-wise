@@ -98,40 +98,40 @@ const WeatherDisplay = ({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-3 w-[500px] mx-auto flex flex-col items-center hover:shadow-xl transition-all duration-300">
-      <div className="flex items-center justify-between mb-2 w-full">
-        <h2 className="text-lg font-semibold text-gray-800">Weather in {city}</h2>
+    <div className="bg-white rounded-xl shadow-lg p-2 w-[500px] mx-auto flex flex-col items-center hover:shadow-xl transition-all duration-300">
+      <div className="flex items-center justify-between mb-1 w-full">
+        <h2 className="text-base font-semibold text-gray-800">Weather in {city}</h2>
         <img 
           src={icon || "default_image.png"} 
           alt="Weather icon" 
-          className="w-8 h-8"
+          className="w-6 h-6"
         />
       </div>
       
-      <div className="grid grid-cols-4 gap-2 w-full">
-        <div className="bg-gray-50 rounded-lg p-2 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
-          <p className="text-xs text-gray-600 group-hover:text-blue-600 group-hover:text-sm transition-all duration-200">Temperature</p>
-          <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-lg transition-all duration-200">{temperature}°C</p>
+      <div className="grid grid-cols-4 gap-1 w-full">
+        <div className="bg-gray-50 rounded-lg p-1.5 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
+          <p className="text-[10px] text-gray-600 group-hover:text-blue-600 group-hover:text-xs transition-all duration-200">Temperature</p>
+          <p className="text-xs font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-sm transition-all duration-200">{temperature}°C</p>
         </div>
         
-        <div className="bg-gray-50 rounded-lg p-2 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
-          <p className="text-xs text-gray-600 group-hover:text-blue-600 group-hover:text-sm transition-all duration-200">Condition</p>
-          <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-lg transition-all duration-200">{condition}</p>
+        <div className="bg-gray-50 rounded-lg p-1.5 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
+          <p className="text-[10px] text-gray-600 group-hover:text-blue-600 group-hover:text-xs transition-all duration-200">Condition</p>
+          <p className="text-xs font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-sm transition-all duration-200">{condition}</p>
         </div>
         
-        <div className="bg-gray-50 rounded-lg p-2 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
-          <p className="text-xs text-gray-600 group-hover:text-blue-600 group-hover:text-sm transition-all duration-200">Humidity</p>
-          <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-lg transition-all duration-200">{humidity}%</p>
+        <div className="bg-gray-50 rounded-lg p-1.5 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
+          <p className="text-[10px] text-gray-600 group-hover:text-blue-600 group-hover:text-xs transition-all duration-200">Humidity</p>
+          <p className="text-xs font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-sm transition-all duration-200">{humidity}%</p>
         </div>
         
-        <div className="bg-gray-50 rounded-lg p-2 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
-          <p className="text-xs text-gray-600 group-hover:text-blue-600 group-hover:text-sm transition-all duration-200">Wind Speed</p>
-          <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-lg transition-all duration-200">{windSpeed} m/s</p>
+        <div className="bg-gray-50 rounded-lg p-1.5 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
+          <p className="text-[10px] text-gray-600 group-hover:text-blue-600 group-hover:text-xs transition-all duration-200">Wind Speed</p>
+          <p className="text-xs font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-sm transition-all duration-200">{windSpeed} m/s</p>
         </div>
         
-        <div className="bg-gray-50 rounded-lg p-2 col-span-4 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
-          <p className="text-xs text-gray-600 group-hover:text-blue-600 group-hover:text-sm transition-all duration-200">Chance of Rain</p>
-          <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-lg transition-all duration-200">{chanceOfRain}%</p>
+        <div className="bg-gray-50 rounded-lg p-1.5 col-span-4 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
+          <p className="text-[10px] text-gray-600 group-hover:text-blue-600 group-hover:text-xs transition-all duration-200">Chance of Rain</p>
+          <p className="text-xs font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-sm transition-all duration-200">{chanceOfRain}%</p>
         </div>
       </div>
     </div>
