@@ -21,11 +21,13 @@ const WeatherDisplay = ({
   const [icon, setIcon] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchWeather = async () => {
       if (!weatherApiKey) {
         setError("Weather API key is missing. Please check your environment variables.");
+        setIsLoading(false);
         return;
       }
 
@@ -34,9 +36,11 @@ const WeatherDisplay = ({
       
       // Rate limiting: don't fetch more than once every 10 minutes
       if (timeSinceLastFetch < 600000) { // 10 minutes in milliseconds
+        setIsLoading(false);
         return;
       }
 
+      setIsLoading(true);
       try {
         const response = await fetch(
           `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${weatherApiKey}&units=metric`
@@ -61,31 +65,75 @@ const WeatherDisplay = ({
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch weather data");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchWeather();
-  }, [city, weatherApiKey, lastFetchTime, latitude, longitude]);
+  }, [weatherApiKey, latitude, longitude]); // Removed city and lastFetchTime from dependencies
 
   if (error) {
     return (
-      <div className="text-red-500">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
         <p>{error}</p>
       </div>
     );
   }
 
-  return (
-    <div className="">
-      <div className="flex ">
-        <h2>Weather in {city} </h2>
-        <img src={icon || "default_image.png"} alt="Weather icon" />
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-3 w-[500px] mx-auto flex flex-col items-center">
+        <div className="animate-pulse w-full">
+          <div className="h-6 bg-gray-200 rounded w-3/4 mb-2 mx-auto"></div>
+          <div className="grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-gray-200 rounded-lg p-2 h-12"></div>
+            ))}
+            <div className="bg-gray-200 rounded-lg p-2 h-12 col-span-4"></div>
+          </div>
+        </div>
       </div>
-      <p>Temperature: {temperature}°C</p>
-      <p>Condition: {condition}</p>
-      <p>Humidity: {humidity}%</p>
-      <p>Wind Speed: {windSpeed} m/s</p>
-      <p>Chance of Rain: {chanceOfRain}%</p>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-lg p-3 w-[500px] mx-auto flex flex-col items-center hover:shadow-xl transition-all duration-300">
+      <div className="flex items-center justify-between mb-2 w-full">
+        <h2 className="text-lg font-semibold text-gray-800">Weather in {city}</h2>
+        <img 
+          src={icon || "default_image.png"} 
+          alt="Weather icon" 
+          className="w-8 h-8"
+        />
+      </div>
+      
+      <div className="grid grid-cols-4 gap-2 w-full">
+        <div className="bg-gray-50 rounded-lg p-2 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
+          <p className="text-xs text-gray-600 group-hover:text-blue-600 group-hover:text-sm transition-all duration-200">Temperature</p>
+          <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-lg transition-all duration-200">{temperature}°C</p>
+        </div>
+        
+        <div className="bg-gray-50 rounded-lg p-2 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
+          <p className="text-xs text-gray-600 group-hover:text-blue-600 group-hover:text-sm transition-all duration-200">Condition</p>
+          <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-lg transition-all duration-200">{condition}</p>
+        </div>
+        
+        <div className="bg-gray-50 rounded-lg p-2 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
+          <p className="text-xs text-gray-600 group-hover:text-blue-600 group-hover:text-sm transition-all duration-200">Humidity</p>
+          <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-lg transition-all duration-200">{humidity}%</p>
+        </div>
+        
+        <div className="bg-gray-50 rounded-lg p-2 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
+          <p className="text-xs text-gray-600 group-hover:text-blue-600 group-hover:text-sm transition-all duration-200">Wind Speed</p>
+          <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-lg transition-all duration-200">{windSpeed} m/s</p>
+        </div>
+        
+        <div className="bg-gray-50 rounded-lg p-2 col-span-4 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer group">
+          <p className="text-xs text-gray-600 group-hover:text-blue-600 group-hover:text-sm transition-all duration-200">Chance of Rain</p>
+          <p className="text-sm font-bold text-gray-800 group-hover:text-blue-700 group-hover:text-lg transition-all duration-200">{chanceOfRain}%</p>
+        </div>
+      </div>
     </div>
   );
 };
