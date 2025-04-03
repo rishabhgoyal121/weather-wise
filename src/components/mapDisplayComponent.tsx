@@ -25,18 +25,9 @@ import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import WeatherDisplay from "@/components/weatherComponent";
 import { DivIcon, Icon, IconOptions } from "leaflet";
+import L from "leaflet";
 
-const MapDisplay = ({
-  weatherApiKey,
-  geocodingApiKey,
-  initialLatitude = 51.505, // default latitude
-  setLatitude,
-  initialLongitude = -0.09, // default longitude
-  setLongitude,
-  zoomLevel = 13,
-  city = "London",
-  setCity,
-}: {
+interface MapDisplayProps {
   weatherApiKey: string;
   geocodingApiKey: string;
   initialLatitude?: number;
@@ -46,12 +37,35 @@ const MapDisplay = ({
   zoomLevel?: number;
   city?: string;
   setCity?: (city: string) => void;
+  onMapClick?: (latitude: number, longitude: number) => void;
+}
+
+const MapDisplay: React.FC<MapDisplayProps> = ({
+  weatherApiKey,
+  geocodingApiKey,
+  initialLatitude = 51.505, // default latitude
+  setLatitude,
+  initialLongitude = -0.09, // default longitude
+  setLongitude,
+  zoomLevel = 13,
+  city = "London",
+  setCity,
+  onMapClick
 }) => {
   const [error, setError] = useState<null | unknown>(null);
   const [customIcon, setCustomIcon] = useState<Icon<IconOptions> | DivIcon | undefined>(undefined);
   const [currentLat, setCurrentLat] = useState(initialLatitude);
   const [currentLng, setCurrentLng] = useState(initialLongitude);
   const [currentCity, setCurrentCity] = useState(city);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Add effect to update current coordinates when initial coordinates change
+  useEffect(() => {
+    if (!isUpdating) {
+      setCurrentLat(initialLatitude);
+      setCurrentLng(initialLongitude);
+    }
+  }, [initialLatitude, initialLongitude, isUpdating]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -127,25 +141,9 @@ const MapDisplay = ({
     const map = useMap();
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     
-    useEffect(() => {
-      map.flyTo([currentLat, currentLng], map.getZoom());
-    }, [currentLat, currentLng, map]);
-
     useMapEvents({
       click(e) {
-        const { lat, lng } = e.latlng;
-        // Round to 4 decimal places for better accuracy while preventing floating point issues
-        const roundedLat = Math.round(lat * 10000) / 10000;
-        const roundedLng = Math.round(lng * 10000) / 10000;
-        
-        // Only update if the coordinates have actually changed
-        if (roundedLat !== currentLat || roundedLng !== currentLng) {
-          setCurrentLat(roundedLat);
-          setCurrentLng(roundedLng);
-          setLatitude(roundedLat);
-          setLongitude(roundedLng);
-          map.flyTo(e.latlng, map.getZoom());
-        }
+        handleMapClick(e);
       },
     });
 
@@ -184,8 +182,10 @@ const MapDisplay = ({
 
   // Update currentCity when city prop changes
   useEffect(() => {
-    setCurrentCity(city);
-  }, [city]);
+    if (!isUpdating) {
+      setCurrentCity(city);
+    }
+  }, [city, isUpdating]);
 
   // Move the useEffect outside of LocationMarker to prevent unnecessary re-renders
   useEffect(() => {
@@ -198,6 +198,23 @@ const MapDisplay = ({
     
     updateLocation();
   }, [currentLat, currentLng]);
+
+  // Handle map click
+  const handleMapClick = (e: L.LeafletMouseEvent) => {
+    const { lat, lng } = e.latlng;
+    const roundedLat = Math.round(lat * 10000) / 10000;
+    const roundedLng = Math.round(lng * 10000) / 10000;
+    
+    setIsUpdating(true);
+    setCurrentLat(roundedLat);
+    setCurrentLng(roundedLng);
+    setLatitude(roundedLat);
+    setLongitude(roundedLng);
+    if (onMapClick) {
+      onMapClick(roundedLat, roundedLng);
+    }
+    setIsUpdating(false);
+  };
 
   if (error) return (
     <div className="flex items-center justify-center h-[100vh] w-full bg-gray-50">
@@ -245,6 +262,7 @@ MapDisplay.propTypes = {
   zoomLevel: PropTypes.number,
   city: PropTypes.string,
   setCity: PropTypes.func,
+  onMapClick: PropTypes.func,
 };
 
 export default MapDisplay;
