@@ -32,6 +32,91 @@ body {
   }
 }
 .leaflet-popup-content-wrapper {
-  width: auto !important; /* Set the width as needed */
-  height: 23vw !important; /* Set the height as needed */
+  width: auto !important;
+  min-width: 520px !important;
+  max-width: 550px !important;
+  height: auto !important;
+  min-height: 160px !important;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  padding: 6px;
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* Custom close button styles */
+.leaflet-popup-close-button {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  padding: 8px !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 1 !important;
+  color: #1F2937 !important;
+  opacity: 0.8 !important;
+  transition: all 0.2s ease !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.leaflet-popup-close-button:hover {
+  opacity: 1 !important;
+  color: #111827 !important;
+  transform: scale(1.1) !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Custom animation for the marker */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* Smooth transitions for map interactions */
+.leaflet-fade-anim .leaflet-tile,
+.leaflet-zoom-anim .leaflet-zoom-animated {
+  transition: transform 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Custom scrollbar for popup content */
+.leaflet-popup-content-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.leaflet-popup-content-wrapper::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.leaflet-popup-content-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.leaflet-popup-content-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }

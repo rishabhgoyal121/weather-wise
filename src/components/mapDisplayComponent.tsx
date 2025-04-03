@@ -59,10 +59,11 @@ const MapDisplay = ({
       setCustomIcon(
         new L.Icon({
           iconUrl: "/marker-icon.png",
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
+          iconSize: [32, 52],
+          iconAnchor: [16, 52],
           popupAnchor: [1, -34],
-          shadowSize: [41, 41],
+          shadowSize: [52, 52],
+          className: "animate-bounce"
         })
       );
     }
@@ -122,13 +123,9 @@ const MapDisplay = ({
     }
   };
 
-  useEffect(() => {
-    fetchWeather(currentLat, currentLng);
-    fetchCityName(currentLat, currentLng);
-  }, [currentLat, currentLng]);
-
   const LocationMarker = () => {
     const map = useMap();
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
     
     useEffect(() => {
       map.flyTo([currentLat, currentLng], map.getZoom());
@@ -137,11 +134,18 @@ const MapDisplay = ({
     useMapEvents({
       click(e) {
         const { lat, lng } = e.latlng;
-        setCurrentLat(lat);
-        setCurrentLng(lng);
-        setLatitude(lat);
-        setLongitude(lng);
-        map.flyTo(e.latlng, map.getZoom());
+        // Round to 4 decimal places for better accuracy while preventing floating point issues
+        const roundedLat = Math.round(lat * 10000) / 10000;
+        const roundedLng = Math.round(lng * 10000) / 10000;
+        
+        // Only update if the coordinates have actually changed
+        if (roundedLat !== currentLat || roundedLng !== currentLng) {
+          setCurrentLat(roundedLat);
+          setCurrentLng(roundedLng);
+          setLatitude(roundedLat);
+          setLongitude(roundedLng);
+          map.flyTo(e.latlng, map.getZoom());
+        }
       },
     });
 
@@ -149,34 +153,85 @@ const MapDisplay = ({
       <Marker
         position={[currentLat, currentLng]}
         icon={customIcon}
-        eventHandlers={{ add: (e) => e.target.openPopup() }}
+        eventHandlers={{ 
+          add: (e) => {
+            if (!isPopupOpen) {
+              e.target.openPopup();
+              setIsPopupOpen(true);
+              e.target.getElement().classList.add('animate-bounce');
+            }
+          },
+          remove: (e) => {
+            e.target.getElement().classList.remove('animate-bounce');
+          },
+          popupopen: () => setIsPopupOpen(true),
+          popupclose: () => setIsPopupOpen(false)
+        }}
       >
-        <Popup>
-          <WeatherDisplay 
-            weatherApiKey={weatherApiKey} 
-            city={currentCity} 
-            latitude={currentLat}
-            longitude={currentLng}
-          />
+        <Popup className="custom-popup">
+          <div className="p-2">
+            <WeatherDisplay 
+              weatherApiKey={weatherApiKey} 
+              city={currentCity} 
+              latitude={currentLat}
+              longitude={currentLng}
+            />
+          </div>
         </Popup>
       </Marker>
     );
   };
 
-  if (error) return <div>Error: {(error as Error).message}</div>;
+  // Update currentCity when city prop changes
+  useEffect(() => {
+    setCurrentCity(city);
+  }, [city]);
+
+  // Move the useEffect outside of LocationMarker to prevent unnecessary re-renders
+  useEffect(() => {
+    const updateLocation = async () => {
+      await Promise.all([
+        fetchWeather(currentLat, currentLng),
+        fetchCityName(currentLat, currentLng)
+      ]);
+    };
+    
+    updateLocation();
+  }, [currentLat, currentLng]);
+
+  if (error) return (
+    <div className="flex items-center justify-center h-[100vh] w-full bg-gray-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+        <div className="text-red-500 mb-4">
+          <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">Error</h2>
+        <p className="text-gray-600 text-center">{(error as Error).message}</p>
+      </div>
+    </div>
+  );
 
   return (
-    <MapContainer
-      center={[currentLat, currentLng]}
-      zoom={zoomLevel}
-      className="h-[100vh] w-full"
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      <LocationMarker />
-    </MapContainer>
+    <div className="relative h-[100vh] w-full">
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white opacity-50 z-0"></div>
+      <MapContainer
+        center={[currentLat, currentLng]}
+        zoom={zoomLevel}
+        className="h-full w-full z-10"
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        <LocationMarker />
+      </MapContainer>
+      <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-4 z-20">
+        <h2 className="text-lg font-semibold text-gray-800 mb-2">Current Location</h2>
+        <p className="text-gray-600">{currentCity}</p>
+      </div>
+    </div>
   );
 };
 
